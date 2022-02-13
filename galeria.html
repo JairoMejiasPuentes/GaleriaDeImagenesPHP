@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>upload images</title>
+</head>
+
+<body onload="showAllImages('showAllImages')">
+    
+        <input type="file" name="image" id="image" onchange="uploadImage(this.files)" style="display:none;">
+        <div class="control"><span>For upload an image click here: </span><button class="sendButton"id="sendButton"onclick="document.getElementById('image').click()">Upstream image</button></div>
+        <div id="bigImage" class="bigimage"></div>
+    <br>
+    <div id="gallery" class="divFlex" ></div>
+</body>
+<script>
+    const gallery = document.getElementById("gallery")
+    const bigImage = document.getElementById("bigImage")
+    function uploadImage(file) {
+        let ajaxObj = new XMLHttpRequest();
+        let formData = new FormData()
+        formData.append("image",file[0])
+        ajaxObj.open("POST", "data.php", true);
+        ajaxObj.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                location.reload();
+            }
+        }
+        ajaxObj.send(formData);
+    }
+
+    function deleteImage(method,fileName) {
+        filenamesplit = fileName.split('.') 
+        let ajaxObj = new XMLHttpRequest();
+        let params = "method=" + method+"&filename="+filenamesplit[0] 
+        ajaxObj.open("POST", "data.php", true);
+        ajaxObj.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        ajaxObj.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                if(this.responseText == true){
+                    alert("the image are delete")
+                    location.reload();
+                }
+            }
+        }
+        ajaxObj.send(params);
+    }
+
+    function showImage(image){
+        bigImage.style.display = 'block';
+        bigImage.innerHTML = "<div class='imageContainer'><img class=\"image\" onclick=\"bigImage.style.display ='none'\" src="+image+" width= \"800px\"></div>"
+    }
+
+    function closeBigImage(){
+        bigImage.style.display ='none';
+    }
+
+    function showAllImages(method){
+        let ajaxObj = new XMLHttpRequest();
+        let params = "method=" + method
+        ajaxObj.open("POST", "data.php", true);
+        ajaxObj.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        ajaxObj.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                JSON.parse(this.responseText).forEach((element) => {
+                    gallery.innerHTML += "<div class='imageContainer'><img title=\"click to enlarge\" class='image' onclick=\"showImage('img/"+element.url+"')\" src='img/"+element.url+"' width= '150px' height='100px'><button class='button' onclick=\"deleteImage('delImages','img/"+element.url+"')\" name='erase'>delete</button></div>"
+                });
+            }
+        }
+        ajaxObj.send(params);
+    }
+
+</script>
+
+</html>
